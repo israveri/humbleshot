@@ -1,16 +1,37 @@
-!#/bin/bash
+#!/bin/bash
 
-FILENAME="$HOME/Pictures/Screenshots/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
+# Defines target dir and filename
+SCREENSHOTS_DIR="$HOME/Pictures/Screenshots"
+mkdir -p "$SCREENSHOTS_DIR"
+FILENAME="$SCREENSHOTS_DIR/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
 
-# Select region, take screenshot, saves to disc and copy to clipboard
-grim -g "$(slurp -d)" - | tee "$FILENAME" | wl-copy
+# mode selection: region | screen
+MODE="${1:-region}"
 
-# Annotate it baby
-satty --filename="$FILENAME" \
-    --output-filename="$FILENAME" \
-    --copy-command=wl-copy \
-    --initial-tool=brush \
-    --early-exit \
-    --disable-notifications \
-    --floating-hack \
-    --resize=smart
+case $MODE in
+    region)
+	grim -g "$(slurp -d)" - | tee "$FILENAME" | wl-copy
+	notify-send "Screenshot Taken" "$FILENAME"
+	;;
+    screen)
+	grim - | tee "$FILENAME" | wl-copy
+	notify-send "Screenshot Taken" "$FILENAME"
+	;;
+    *)
+	echo "Unknown mode $MODE"
+	exit 1
+	;;
+esac
+
+if [ $? -eq 0 ] && [ -f "$FILENAME" ]; then
+    satty --filename="$FILENAME" \
+	--output-filename="$FILENAME" \
+	--copy-command=wl-copy \
+	--initial-tool=brush \
+	--early-exit \
+	--disable-notifications \
+	--floating-hack \
+	--resize=smart
+else
+    notify-send "Screenshot Failed" "Could not capture $MODE screenshot"
+fi
