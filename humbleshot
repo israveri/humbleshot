@@ -8,17 +8,35 @@ FILENAME="$SCREENSHOTS_DIR/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
 # mode selection: region | screen
 MODE="${1:-region}"
 
+
+if command -v qs &> /dev/null; then
+    NOTIFY_CMD="qs -c noctalia-shell ipc call toast send"
+else
+    NOTIFY_CMD="notify-send"
+fi
+
+notify() {
+    local title="$1"
+    local body="$2"
+
+    if [[ $NOTIFY_CMD == *"toast"* ]]; then
+	$NOTIFY_CMD "{ \"title\": \"$title\", \"body\": \"$body\" }"
+    else
+	$NOTIFY_CMD "$title" "$body"
+    fi
+}
+
 case $MODE in
     region)
 	grim -g "$(slurp -d)" - | tee "$FILENAME" | wl-copy
-	notify-send "Screenshot Taken" "$FILENAME"
+	notify "Screenshot Taken" "$(basename $FILENAME)"
 	;;
     screen)
 	grim - | tee "$FILENAME" | wl-copy
-	notify-send "Screenshot Taken" "$FILENAME"
+	notify "Screenshot Taken" "$(basename $FILENAME)"
 	;;
     *)
-	echo "Unknown mode $MODE"
+	notify "Screenshot Failed" "Invalid mode '$MODE'\nValid options: region | screen"
 	exit 1
 	;;
 esac
@@ -33,5 +51,5 @@ if [ $? -eq 0 ] && [ -f "$FILENAME" ]; then
 	--floating-hack \
 	--resize=smart
 else
-    notify-send "Screenshot Failed" "Could not capture $MODE screenshot"
+    notify "Screenshot Failed" "Could not capture $MODE screenshot"
 fi
