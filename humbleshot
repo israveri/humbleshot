@@ -1,0 +1,16 @@
+!#/bin/bash
+
+FILENAME="$HOME/Pictures/Screenshots/screenshot_$(date +'%Y-%m-%d_%H-%M-%S').png"
+
+# Select region, take screenshot, saves to disc and copy to clipboard
+grim -g "$(slurp -d)" - | tee "$FILENAME" | wl-copy
+
+# Annotate it baby
+satty --filename="$FILENAME" \
+    --output-filename="$FILENAME" \
+    --copy-command=wl-copy \
+    --initial-tool=brush \
+    --early-exit \
+    --disable-notifications \
+    --floating-hack \
+    --resize=smart
