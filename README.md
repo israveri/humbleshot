@@ -1,4 +1,4 @@
-# Humbeshot
+# Humbleshot
 
 Simple tool for screenshots and annotations.
 
